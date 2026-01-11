@@ -39,3 +39,23 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/src/generated/prisma
+dist/
+.turbo/
+
+# --- Blueprints & Documentation ---
+ARCHITECTURE_MASTER.md
+DATABASE_SCHEMA.sql
+BACKLOG.md
+DIRECTORY_STRUCTURE.txt
+API_CONTRACT.yaml
+PROJECT_BRAIN.md
+
+# --- Temporary Notes & Scripts ---
+test-*.ts
+seed*.sql
+setup-analytics.ts
+reset-data.ts
+generate-seed-sql.js
+*.xlsx
