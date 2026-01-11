@@ -1,0 +1,39 @@
+{
+  "meta": {
+    "version": "4.0",
+    "structure": "Split-Token (value=machine_readable, hint=human_context)"
+  },
+  "colors": {
+    "primary": { "value": "#0F172A", "hint": "bg-slate-900" },
+    "alert": { "value": "#EF4444", "hint": "text-red-500" },
+    "success": { "value": "#10B981", "hint": "text-emerald-500" },
+    "surface_glass": { "value": "rgba(255, 255, 255, 0.8)", "hint": "backdrop-blur" }
+  },
+  "typography": {
+    "scale_display": { "value": 48, "hint": "clamp(3rem, 5vw, 6rem)" },
+    "scale_body": { "value": 16, "hint": "1rem" }
+  },
+  "spacing": {
+    "base_unit": { "value": 4, "hint": "0.25rem" },
+    "container_pad": { "value": 16, "hint": "clamp(1rem, 5vw, 4rem)" },
+    "section_gap": { "value": 64, "hint": "clamp(4rem, 10vw, 8rem)" }
+  },
+  "motion": {
+    "easing_default": {
+      "name": "power2.out",
+      "value": [0.25, 0.1, 0.25, 1],
+      "hint": "CSS cubic-bezier"
+    },
+    "easing_expressive": {
+      "name": "expo.out",
+      "value": [0.19, 1, 0.22, 1],
+      "hint": "GSAP Expo.out"
+    },
+    "duration_fast": { "value": 300, "hint": "300ms" },
+    "duration_normal": { "value": 600, "hint": "600ms" }
+  },
+  "a11y": {
+    "min_contrast_ratio": { "value": 4.5, "hint": "WCAG AA" },
+    "focus_ring_offset": { "value": 2, "hint": "2px" }
+  }
+}

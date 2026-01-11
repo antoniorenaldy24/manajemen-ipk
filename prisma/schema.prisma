@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  UPM
+  KAPRODI
+  MAHASISWA
+}
+
+model User {
+  id            String    @id @default(uuid()) @db.Uuid
+  email         String    @unique @db.VarChar(255)
+  password_hash String    @db.VarChar(255)
+  role          Role
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @default(now()) @updatedAt
+  deleted_at    DateTime?
+  created_by    String?   @db.Uuid
+
+  student       Student?
+}
+
+model Student {
+  id               String           @id @default(uuid()) @db.Uuid
+  user_id          String           @unique @db.Uuid
+  user             User             @relation(fields: [user_id], references: [id])
+  
+  // BLIND INDEXING [PB-SEC-01]
+  nim_hash         String           @unique @db.Char(64) // SHA-256
+  nim_encrypted    String           @db.Text             // AES-GCM
+  
+  name             String           @db.VarChar(255)
+  batch_year       Int
+  current_semester Int
+  ipk              Decimal          @default(0.00) @db.Decimal(3, 2)
+  total_sks        Int              @default(0)
+  status           String           @default("AMAN") @db.VarChar(50)
+  
+  created_at       DateTime         @default(now())
+  updated_at       DateTime         @default(now()) @updatedAt
+  deleted_at       DateTime?
+  created_by       String?          @db.Uuid
+
+  academic_records AcademicRecord[]
+}
+
+model AcademicRecord {
+  id          String   @id @default(uuid()) @db.Uuid
+  student_id  String   @db.Uuid
+  student     Student  @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  
+  course_code String   @db.VarChar(50)
+  course_name String   @default("") @db.VarChar(255) // Added for better reporting
+  sks         Int      @default(0) // Essential for IPK Calc
+  semester    Int
+  grade_point Decimal  @db.Decimal(3, 2)
+  
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now()) @updatedAt
+}
+
+model ImportLog {
+  id                String   @id @default(uuid()) @db.Uuid
+  filename          String   @db.VarChar(255)
+  status            String   @default("PENDING") @db.VarChar(50) // PENDING, PROCESSING, COMPLETED, FAILED
+  records_processed Int      @default(0)
+  error_message     String?  @db.Text
+  created_at        DateTime @default(now())
+  updated_at        DateTime @default(now()) @updatedAt
+  created_by        String   @db.Uuid // User ID
+}
+

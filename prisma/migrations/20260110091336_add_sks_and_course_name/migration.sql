@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "AcademicRecord" ADD COLUMN     "course_name" VARCHAR(255) NOT NULL DEFAULT '',
+ADD COLUMN     "sks" INTEGER NOT NULL DEFAULT 0;
