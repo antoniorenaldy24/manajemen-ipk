@@ -128,6 +128,7 @@ export class StudentService {
      * Searches for students, optionally filtering by IPK threshold.
      */
     async searchStudents(query: string, threshold?: number): Promise<StudentRiskData[]> {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         let whereClause: any = {
             deleted_at: null,
         };
