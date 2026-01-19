@@ -82,7 +82,7 @@ export async function mapTranscriptData(rawData: any[]): Promise<MappedTranscrip
 
             // 3. Transformation & Security
             const nimStr = String(rawNim).trim().toUpperCase();
-            const sksNum = Number(rawSks) || 0; // Default to 0 if missing/NaN, handled in Calc logic
+            const sksNum = Number(rawSks) || 0;
             const gradeLetter = String(rawNilaiHuruf || '').trim().toUpperCase();
 
             // [PB-SEC-01] Enforce Encryption BEFORE leaving this layer
@@ -93,7 +93,7 @@ export async function mapTranscriptData(rawData: any[]): Promise<MappedTranscrip
             // [Conversion] Grade to Point
             const gradePoint = convertGradeToPoint(gradeLetter);
 
-            console.log("MAPPING_ROW:", { nim: nimStr, hash: nimHash, sks: sksNum, grade_point: gradePoint });
+            console.log("MAPPING_ROW:", { nim: nimStr, grade_point: gradePoint });
 
             mappedResults.push({
                 nim_hash: nimHash,

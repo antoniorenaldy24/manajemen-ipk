@@ -1,26 +1,76 @@
 @import "tailwindcss";
 
 :root {
-  --background: #030712;
-  --foreground: #ededed;
+  /* Light Theme Defaults */
+  --background: #f8fafc;
+  /* Slate-50 */
+  --foreground: #0f172a;
+  /* Slate-900 */
+
+  /* Primary: Indigo-600 */
+  --primary: #4f46e5;
+  --primary-foreground: #ffffff;
+
+  /* Secondary: Slate-100 */
+  --secondary: #f1f5f9;
+  --secondary-foreground: #1e293b;
+
+  /* Accent: Violet-500 */
+  --accent: #8b5cf6;
+  --accent-foreground: #ffffff;
+
+  /* Card */
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --border: #e2e8f0;
+  /* Slate-200 */
+
+  /* Status Colors */
+  --success: #10b981;
+  /* Emerald-500 */
+  --warning: #f59e0b;
+  /* Amber-500 */
+  --danger: #ef4444;
+  /* Red-500 */
+}
+
+/* Override Dark Mode preference to enforce Light Theme as requested */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #f8fafc;
+    --foreground: #0f172a;
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-card: var(--card);
+  --color-border: var(--border);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #030712;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
+  background-color: var(--background);
+  color: var(--foreground);
 }
 
-html {
-  height: 100%;
-  background-color: #030712;
-  /* gray-950 */
+/* Utilities */
+.glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.shadow-soft {
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
 }

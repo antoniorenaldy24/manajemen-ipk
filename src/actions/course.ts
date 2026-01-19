@@ -8,10 +8,8 @@ export async function getCourseAnalytics() {
     if (!session || session.user.role !== 'UPM') return { error: "Unauthorized" };
 
     try {
-        const hardest = await courseService.getCoursePerformance(5, 'hardest');
-        const easiest = await courseService.getCoursePerformance(5, 'easiest');
-
-        return { hardest, easiest };
+        const difficultyAnalysis = await courseService.getAllCoursesSorted();
+        return { difficultyAnalysis };
     } catch (e) {
         console.error(e);
         return { error: "Failed to fetch course analytics" };

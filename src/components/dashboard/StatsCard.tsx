@@ -26,23 +26,23 @@ export default function StatsCard({ title, value, description, iconName, trend }
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative overflow-hidden rounded-xl border border-white/20 bg-white/10 p-6 backdrop-blur-md shadow-xl"
+            className="relative overflow-hidden rounded-2xl bg-white p-6 shadow-soft border border-slate-100 group hover:border-indigo-100 transition-colors"
         >
             <div className="flex items-center justify-between">
                 <div>
-                    <h3 className="text-sm font-medium text-gray-200">{title}</h3>
-                    <div className="mt-2 text-3xl font-bold text-white">{value}</div>
+                    <h3 className="text-sm font-medium text-slate-500">{title}</h3>
+                    <div className="mt-2 text-3xl font-bold text-slate-900 tracking-tight">{value}</div>
                 </div>
-                <div className="p-3 bg-white/10 rounded-lg">
-                    <Icon className="w-6 h-6 text-blue-400" />
+                <div className="p-3 bg-indigo-50 rounded-xl group-hover:bg-indigo-100 transition-colors">
+                    <Icon className="w-6 h-6 text-indigo-600" />
                 </div>
             </div>
-            <p className="mt-4 text-xs text-gray-400">
+            <p className="mt-4 text-xs font-medium text-slate-400">
                 {description}
             </p>
 
-            {/* Glossy Effect overlay */}
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+            {/* Subtle Gradient Decor */}
+            <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-gradient-to-br from-indigo-500/5 to-violet-500/5 rounded-full blur-2xl pointer-events-none" />
         </motion.div>
     );
 }

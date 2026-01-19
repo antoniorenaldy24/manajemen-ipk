@@ -30,6 +30,7 @@ model User {
   created_by    String?   @db.Uuid
 
   student       Student?
+  reports       ReportLog[]
 }
 
 model Student {
@@ -82,3 +83,15 @@ model ImportLog {
   created_by        String   @db.Uuid // User ID
 }
 
+
+model ReportLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  report_type String   @db.VarChar(50) // 'PDF_RISK', 'EXCEL_ALL'
+  parameters  Json     // { "threshold": 2.0, "semester": 3 }
+  file_hash   String   @db.Char(64)    // SHA-256 of the buffer
+  format      String   @db.VarChar(10) // 'PDF', 'XLSX'
+  
+  created_at  DateTime @default(now())
+  created_by  String   @db.Uuid
+  user        User     @relation(fields: [created_by], references: [id])
+}

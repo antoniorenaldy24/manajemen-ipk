@@ -15,9 +15,10 @@ export async function GET(request: Request) {
     const page = Number(searchParams.get("page")) || 1;
     const limit = Number(searchParams.get("limit")) || 10;
     const threshold = Number(searchParams.get("threshold")) || 2.75;
+    const semester = searchParams.get("semester") ? Number(searchParams.get("semester")) : undefined;
 
     try {
-        const result = await studentService.getAtRiskStudents(threshold, page, limit);
+        const result = await studentService.getAtRiskStudents(threshold, page, limit, semester);
         return NextResponse.json(result);
     } catch (error) {
         console.error("Risk API Error:", error);

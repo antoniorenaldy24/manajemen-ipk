@@ -8,7 +8,7 @@ export interface DashboardStats {
     totalStudents: number;
     averageGPA: number;
     totalSKS: number;
-    gpaTrend: { semester: number; avgGPA: number }[];
+    gpaTrend: { semester: string | number; avgGPA: number }[];
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {

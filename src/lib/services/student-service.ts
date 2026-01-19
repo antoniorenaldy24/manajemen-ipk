@@ -34,32 +34,65 @@ export class StudentService {
      * @param page - Pagination page (1-indexed)
      * @param limit - Pagination limit
      */
-    async getAtRiskStudents(threshold: number, page: number = 1, limit: number = 10): Promise<RiskAnalysisResponse> {
+    async getAtRiskStudents(threshold: number, page: number = 1, limit: number = 10, semester?: number): Promise<RiskAnalysisResponse> {
         const offset = (page - 1) * limit;
 
         // 1. Query MV for high-level filtering (IDs & IPK)
-        // Note: Prisma $queryRaw returns generic objects.
-        // We cast to expected shape. 
-        // Logic: Filter by threshold, sort by IPK ASC (Lowest first - Critical)
+        // With optional semester filter.
 
-        // We also need total count for pagination metadata. 
-        // Doing two queries: Count and Data.
-
-        const countResult = await prisma.$queryRaw<{ count: bigint }[]>`
+        let countQuery = `
             SELECT COUNT(*) as count 
             FROM "mv_student_risk" 
             WHERE ipk < ${threshold}
         `;
 
-        const total = Number(countResult[0]?.count || 0);
+        if (semester) {
+            countQuery += ` AND current_semester = ${semester}`;
+        }
 
-        const riskRows = await prisma.$queryRaw<{ id: string, ipk: number }[]>`
-            SELECT id, ipk 
-            FROM "mv_student_risk" 
-            WHERE ipk < ${threshold}
-            ORDER BY ipk ASC
-            LIMIT ${limit} OFFSET ${offset}
-        `;
+        // Use proper Prisma raw query (Template literals are safer but dynamic construction requires care or helpers)
+        // For simplicity with Prisma raw, we can use distinct queries or conditions.
+        // Prisma.sql`` handles SQL injection if we pass variables. 
+        // For dynamic "AND", it's slightly trickier with raw template literals. 
+        // Let's use simple conditional logic for the query.
+
+        // Note: Prisma QueryRaw requires template literal tagging for safety.
+        // We will branch since we only have one optional filter.
+
+        let countResult;
+        let riskRows;
+
+        if (semester) {
+            countResult = await prisma.$queryRaw<{ count: bigint }[]>`
+                SELECT COUNT(*) as count 
+                FROM "mv_student_risk" 
+                WHERE ipk < ${threshold} AND current_semester = ${semester}
+            `;
+
+            riskRows = await prisma.$queryRaw<{ id: string, ipk: number }[]>`
+                SELECT id, ipk 
+                FROM "mv_student_risk" 
+                WHERE ipk < ${threshold} AND current_semester = ${semester}
+                ORDER BY ipk ASC
+                LIMIT ${limit} OFFSET ${offset}
+            `;
+        } else {
+            countResult = await prisma.$queryRaw<{ count: bigint }[]>`
+                SELECT COUNT(*) as count 
+                FROM "mv_student_risk" 
+                WHERE ipk < ${threshold}
+            `;
+
+            riskRows = await prisma.$queryRaw<{ id: string, ipk: number }[]>`
+                SELECT id, ipk 
+                FROM "mv_student_risk" 
+                WHERE ipk < ${threshold}
+                ORDER BY ipk ASC
+                LIMIT ${limit} OFFSET ${offset}
+            `;
+        }
+
+        const total = Number(countResult[0]?.count || 0);
 
         if (riskRows.length === 0) {
             return {
@@ -79,36 +112,25 @@ export class StudentService {
                 name: true,
                 total_sks: true,
                 current_semester: true,
-                // We use the IPK from the main table which is synced with MV naturally 
-                // (or strictly use MV's IPK if MV refresh lag is a concern, but usually main table is source of truth)
                 ipk: true
             }
         });
 
-        // Map back to preserve sort order from MV (Lowest IPK first)
+        // Map back to preserve sort order from MV
         const studentMap = new Map(students.map(s => [s.id, s]));
 
         // 3. Transformation & Decryption
         const processedData: StudentRiskData[] = riskRows.map(row => {
             const details = studentMap.get(row.id);
-            if (!details) return null; // Should not happen given FK constraint
-
-            // Handling Nulls/Zero SKS
-            // If SKS is 0, IPK is 0. This is technically "Critical" but might be "New Student".
-            // We verify logical status. 
-            // Standard: If IPK < 2.00 -> KRITIS. If 2.00 <= IPK < 2.75 -> WASPADA.
+            if (!details) return null;
 
             const ipkVal = Number(details.ipk);
             let status: RiskStatus = 'AMAN';
             if (ipkVal < 2.00) status = 'KRITIS';
             else if (ipkVal < 2.75) status = 'WASPADA';
 
-            // Special case logic could be added here (e.g. SKS=0 => "BELUM ADA DATA" or "KRITIS")
-            // Strict interpretation: 0 is < 2.00, so KRITIS.
-
             return {
                 id: details.id,
-                // Decrypt NIM on the fly
                 nim: decryptNIM(details.nim_encrypted),
                 name: details.name,
                 ipk: ipkVal,
@@ -186,6 +208,66 @@ export class StudentService {
                 risk_status: status
             };
         });
+    }
+
+    /**
+     * Retrieves ALL students considered "At Risk" for reporting purposes (No Pagination).
+     */
+    async getAllAtRiskStudents(threshold: number, semester?: number): Promise<StudentRiskData[]> {
+        // 1. Query MV
+        let query = `
+            SELECT id, ipk 
+            FROM "mv_student_risk" 
+            WHERE ipk < ${threshold}
+        `;
+
+        if (semester) {
+            query += ` AND current_semester = ${semester}`;
+        }
+
+        query += ` ORDER BY ipk ASC`;
+
+        const riskRows = await prisma.$queryRawUnsafe<{ id: string, ipk: number }[]>(query);
+
+        if (riskRows.length === 0) return [];
+
+        const studentIds = riskRows.map(r => r.id);
+
+        // 2. Fetch Details
+        const students = await prisma.student.findMany({
+            where: { id: { in: studentIds } },
+            select: {
+                id: true,
+                nim_encrypted: true,
+                name: true,
+                total_sks: true,
+                current_semester: true,
+                ipk: true
+            }
+        });
+
+        const studentMap = new Map(students.map(s => [s.id, s]));
+
+        // 3. Transform
+        return riskRows.map(row => {
+            const details = studentMap.get(row.id);
+            if (!details) return null;
+
+            const ipkVal = Number(details.ipk);
+            let status: RiskStatus = 'AMAN';
+            if (ipkVal < 2.00) status = 'KRITIS';
+            else if (ipkVal < 2.75) status = 'WASPADA';
+
+            return {
+                id: details.id,
+                nim: decryptNIM(details.nim_encrypted),
+                name: details.name,
+                ipk: ipkVal,
+                total_sks: details.total_sks,
+                semester: details.current_semester,
+                risk_status: status
+            };
+        }).filter(item => item !== null) as StudentRiskData[];
     }
 }
 

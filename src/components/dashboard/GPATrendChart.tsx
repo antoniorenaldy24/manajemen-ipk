@@ -5,7 +5,7 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 import { motion } from 'framer-motion';
 
 interface GPATrendChartProps {
-    data: { semester: number; avgGPA: number }[];
+    data: { semester: string | number; avgGPA: number }[];
 }
 
 export default function GPATrendChart({ data }: GPATrendChartProps) {
@@ -15,58 +15,65 @@ export default function GPATrendChart({ data }: GPATrendChartProps) {
         setMounted(true);
     }, []);
 
-    if (!mounted) return <div className="w-full h-full bg-gray-900/50 rounded-xl animate-pulse" />;
+    if (!mounted) return <div className="w-full h-full bg-slate-100 rounded-xl animate-pulse" />;
 
     return (
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="relative w-full bg-gray-900/50 border border-white/10 rounded-xl p-6 backdrop-blur-sm"
+            className="w-full h-full"
         >
-            <h3 className="text-lg font-semibold text-white mb-6">Aggregate GPA Trend</h3>
-            <div className="w-full h-[350px] min-h-[350px]"> {/* Enforced Height for Recharts */}
-                <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={data}>
-                        <defs>
-                            <linearGradient id="colorGpa" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
-                                <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
-                            </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.1} vertical={false} />
-                        <XAxis
-                            dataKey="semester"
-                            stroke="#9ca3af"
-                            fontSize={12}
-                            tickLine={false}
-                            axisLine={false}
-                            tickFormatter={(val) => `Sem ${val}`}
-                        />
-                        <YAxis
-                            stroke="#9ca3af"
-                            fontSize={12}
-                            tickLine={false}
-                            axisLine={false}
-                            domain={[0, 4]}
-                        />
-                        <Tooltip
-                            contentStyle={{ backgroundColor: '#1f2937', borderColor: '#374151', color: '#fff' }}
-                            itemStyle={{ color: '#8884d8' }}
-                            formatter={(value: any) => [value, 'Avg GPA']}
-                            labelFormatter={(label) => `Semester ${label}`}
-                        />
-                        <Area
-                            type="monotone"
-                            dataKey="avgGPA"
-                            stroke="#8884d8"
-                            fillOpacity={1}
-                            fill="url(#colorGpa)"
-                            strokeWidth={3}
-                            animationDuration={1500}
-                        />
-                    </AreaChart>
-                </ResponsiveContainer>
-            </div>
+            {/* Height is controlled by parent container now, but we ensure full fill */}
+            <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <defs>
+                        <linearGradient id="colorGpa" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.2} />
+                            <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
+                        </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.4} vertical={false} stroke="#e2e8f0" />
+                    <XAxis
+                        dataKey="semester"
+                        stroke="#64748b"
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={false}
+                        tickFormatter={(val) => `Sem ${val}`}
+                        dy={10}
+                    />
+                    <YAxis
+                        stroke="#64748b"
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={false}
+                        domain={[0, 4]}
+                        dx={-10}
+                    />
+                    <Tooltip
+                        contentStyle={{
+                            backgroundColor: '#ffffff',
+                            borderColor: '#e2e8f0',
+                            color: '#0f172a',
+                            borderRadius: '12px',
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                        }}
+                        itemStyle={{ color: '#4f46e5', fontWeight: 600 }}
+                        formatter={(value: any) => [value, 'Avg GPA']}
+                        labelFormatter={(label) => `Semester ${label}`}
+                        cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }}
+                    />
+                    <Area
+                        type="monotone"
+                        dataKey="avgGPA"
+                        stroke="#4f46e5"
+                        fillOpacity={1}
+                        fill="url(#colorGpa)"
+                        strokeWidth={3}
+                        animationDuration={1500}
+                    />
+                </AreaChart>
+            </ResponsiveContainer>
         </motion.div>
     );
 }

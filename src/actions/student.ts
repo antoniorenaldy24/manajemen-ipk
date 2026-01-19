@@ -45,3 +45,23 @@ export async function searchStudentAction(query: string) {
         return { error: "Search failed" };
     }
 }
+
+import prisma from "@/lib/db";
+import { SecurityGuard } from "@/lib/security/guard";
+
+export async function getStudentHistory() {
+    const studentId = await SecurityGuard.getCurrentStudentId();
+    if (!studentId) return { error: "Unauthorized" };
+
+    try {
+        const records = await prisma.academicRecord.findMany({
+            where: { student_id: studentId },
+            orderBy: { semester: 'asc' }
+        });
+
+        return { data: records };
+    } catch (error) {
+        console.error("Failed to fetch history:", error);
+        return { error: "Failed to load history" };
+    }
+}
